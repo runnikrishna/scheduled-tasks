@@ -3,8 +3,8 @@ import smtplib, random, pandas
 import os
 
 OLD_CONTENT = '[NAME]'
-USERNAME = "r.mylearnspace@gmail.com"
-PASSWORD = "zfyhsszdqznrjkkx"
+USERNAME = os.environ.get("USERNAME")
+PASSWORD = os.environ.get("PASSWORD")
 
 current_date = dt.datetime.now()
 

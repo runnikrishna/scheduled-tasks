@@ -25,8 +25,9 @@ weather_data = response.json()['list']
 weather_id = [weather_data[value]['weather'][0]['id'] for value in range(0, len(weather_data))]
 for id in weather_id:
     if id < 700:
-        proxy_client = TwilioHttpClient()
-        proxy_client.session.proxies = {'https': os.environ['https_proxy']}
+        # proxy_client = TwilioHttpClient()
+        # proxy_client.session.proxies = {'https': os.environ['https_proxy']}
+        proxy_client = TwilioHttpClient(proxy={'http': os.environ['http_proxy'], 'https': os.environ['https_proxy']})
         client = Client(account_sid, auth_token, http_client=proxy_client)
         message = client.messages.create(
             from_="whatsapp:+14155238886",

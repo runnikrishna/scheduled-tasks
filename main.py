@@ -1,38 +1,35 @@
-import datetime as dt
-import smtplib, random, pandas
+import requests
+from twilio.rest import Client
 import os
 
-OLD_CONTENT = '[NAME]'
-USERNAME = os.environ.get("USERNAME")
-PASSWORD = os.environ.get("PASSWORD")
+API_KEY = os.environ.get("OWM_API_KEY")
+MY_LAT = "53.219383"
+MY_LONG = "6.566502"
 
-current_date = dt.datetime.now()
+account_sid = os.environ.get("ACCOUNT_SID")
+auth_token = os.environ.get("AUTH_TOKEN")
 
-def update_wish(name):
-    files = os.listdir('./letter_templates')
-    current_file = random.choice(files)
-    file_path = os.path.join('./letter_templates', current_file)
-    with open(file_path, 'r') as file:
-        current_file_content = file.read()
-    updated_content = current_file_content.replace(OLD_CONTENT, name)
-    send_email(updated_content)
+parameter = {
+    'lat': MY_LAT,
+    'lon': MY_LONG,
+    'appid': API_KEY,
+    'cnt': 4,
+}
 
-def send_email(email_content):
-    with smtplib.SMTP("smtp.gmail.com") as connection:
-        connection.starttls()
-        connection.login(user=USERNAME, password=PASSWORD)
-        connection.sendmail(
-            from_addr=USERNAME,
-            to_addrs="u88.rahul@gmail.com",
-            msg=f"Subject: Happy Birthday\n\n{email_content}"
+response = requests.get('https://api.openweathermap.org/data/2.5/forecast', params=parameter)
+response.raise_for_status()
+weather_data = response.json()['list']
+# print(weather_data[0]['weather'][0]['id'])
+
+weather_id = [weather_data[value]['weather'][0]['id'] for value in range(0, len(weather_data))]
+for id in weather_id:
+    if id < 700:
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            from_="whatsapp:+14155238886",
+            body="It's going to rain today. Remember to bring an ☔️",
+            to="whatsapp:+919987674266",
         )
-
-birthday_dataset = pandas.read_csv('birthdays.csv')
-birthday_list = birthday_dataset.to_dict(orient="records")
-for record in birthday_list:
-    if current_date.month == record['month'] and current_date.day == record['day']:
-        update_wish(record['name'])
-
-
-
+        print(message.status)
+        break
 
